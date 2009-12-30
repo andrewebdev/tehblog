@@ -56,6 +56,11 @@ object_detail_dict = {
 }
 
 urlpatterns = patterns('', 
+    url(r'^$', date_based.archive_index, archive_index_dict,
+        name="tehblog_landing"
+    ),
+
+    # Categories and Tags
     url(r'^categories/(?P<slug>[-\w]+)/$',
         category_entries,
         name="tehblog_category_entries"
