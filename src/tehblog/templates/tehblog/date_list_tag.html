@@ -1,0 +1,7 @@
+{% if date_list %}
+<ul>
+    {% for date in date_list %}
+    <li><a href="{% url tehblog_month_view year=date.year month=date.month %}">{{ date|date:"F Y" }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}

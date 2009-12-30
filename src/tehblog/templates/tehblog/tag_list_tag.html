@@ -1,0 +1,10 @@
+{% if tag_list %}
+{% regroup tag_list|dictsortreversed:"count" by count as sorted_tags %}
+<ul>
+    {% for tags in sorted_tags %}
+    {% for tag in tags.list %}
+    <li><a href="{% url tehblog_tag_entries tag %}">{{ tag }} ({{ tag.count }})</a></li>
+    {% endfor %}
+    {% endfor %}
+</ul>
+{% endif %}

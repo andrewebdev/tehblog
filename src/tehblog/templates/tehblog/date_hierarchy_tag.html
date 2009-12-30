@@ -1,0 +1,15 @@
+{% if hierarchy %}
+{% regroup hierarchy by publish_date.year as date_hierarchy %}
+<ul>
+    {% for year in date_hierarchy %}
+    {% regroup year.list by publish_date.month as months %}
+    <li><a href="{% url tehblog_year_view year.grouper %}">{{ year.grouper }}</a><br/>
+        <ul>
+            {% for month in months %}
+            <li><a href="{% url tehblog_month_view year.grouper month.grouper %}">{{ month.grouper }}</a></li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}

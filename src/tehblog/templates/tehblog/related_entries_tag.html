@@ -1,0 +1,10 @@
+{% if related_entries %}
+<div class="related_entries">
+    <h3>Related Entries</h3>
+    <ul>
+        {% for entry in related_entries %}
+        <li>{{ entry.publish_date|date:"d D M Y" }} :: <a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
