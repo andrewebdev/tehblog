@@ -134,6 +134,7 @@ class EntryTestCase(TehBlogTestCase):
                 self.entry_news.get_absolute_url()[-len(test_url):],
                 test_url
         )
+
         # Test reverse lookups
         self.assertEquals(reverse(
             'tehblog_entry_view',

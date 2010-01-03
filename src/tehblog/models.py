@@ -79,7 +79,7 @@ class Entry(models.Model):
     def get_absolute_url(self):
         return ('tehblog_entry_view', None, {
             'year': self.publish_date.year,
-            'month': self.publish_date.month,
+            'month': self.publish_date.strftime("%m"),
             'day': self.publish_date.strftime("%d"),
             'slug': self.slug,
         })
