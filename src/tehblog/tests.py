@@ -126,8 +126,8 @@ class EntryTestCase(TehBlogTestCase):
         """
         today = datetime.now()
         day = today.strftime("%d")
-        month = today.month
-        year = today.year
+        month = today.strftime("%m")
+        year = today.strftime("%Y")
         test_url = '%s/%s/%s/%s/' % (year, month, day, self.entry_news.slug)
 
         self.assertEquals(
@@ -135,15 +135,13 @@ class EntryTestCase(TehBlogTestCase):
                 test_url
         )
         # Test reverse lookups
-        self.assertEquals(
-                reverse('tehblog_entry_view', args=[
-                    year,month,day,self.entry_news.slug
-                ])[-len(test_url):],
-                test_url
-        )
+        self.assertEquals(reverse(
+            'tehblog_entry_view',
+            args=[year, month, day, self.entry_news.slug]
+        )[-len(test_url):], test_url)
 
     def testEntryUpdate(self):
-        self.entry_demo.status=Entry.PUBLIC
+        self.entry_demo.status = Entry.PUBLIC
         self.entry_demo.save()
         # After saved, public objects should now be 2
         self.assertEquals(len(Entry.objects.public()), 2)
