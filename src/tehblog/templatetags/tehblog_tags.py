@@ -14,13 +14,21 @@ register = template.Library()
 
 @register.inclusion_tag('tehblog/category_list_tag.html')
 def category_list(count=None):
-    return {'category_list': Category.objects.all()[:count]}
+    return {
+        'category_list': Category.objects.all().exclude(
+            entry__status__in=[1, 3],
+        )[:count]
+    }
 
 @register.inclusion_tag('tehblog/tag_list_tag.html')
 def tag_list(count=None):
     return {
         'tag_list': Tag.objects.usage_for_model(
-            Entry, counts=True
+            Entry,
+            counts=True,
+            filters={
+                'status': 2, # only published entries should add to the tags
+            },
         )[:count]
     }
 
@@ -44,7 +52,7 @@ def date_hierarchy():
     }
 
 @register.inclusion_tag('tehblog/date_list_tag.html')
-def date_list(count=20):
+def date_list(count=None):
     """
     This is a simpler version of the date_hierarchy tag, and will show
     recent dates as a list showing the month and year.
@@ -69,7 +77,7 @@ def date_list(count=20):
 
 
 @register.inclusion_tag('tehblog/related_entries_tag.html')
-def related_entries(entry):
+def related_entries(entry, count=5):
     """
     Renders two lists of related content. First list is related content by category,
     second list is related by tags
@@ -78,7 +86,8 @@ def related_entries(entry):
     {% related_entries entry %}
 
     """
-    related_blog_entries = TaggedItem.objects.get_related(entry, Entry, num=5)
+    related_blog_entries = TaggedItem.objects.get_related(entry, Entry,
+                                                          num=count)
     return {
         'related_entries': related_blog_entries,
     }
