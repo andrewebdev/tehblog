@@ -18,7 +18,7 @@ def category_entries(request, slug,
     if request.user.is_staff:
         entries = Entry.objects.filter(categories=category)
     else:
-        entries = Entry.objects.filter(categories=category, status=Entry.PUBLIC)
+        entries = Entry.objects.public().filter(categories=category)
     return render_to_response(
         template,
         {'entries': entries, 'category': category},

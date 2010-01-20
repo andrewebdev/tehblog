@@ -5,13 +5,16 @@
 # Please see the text file LICENCE for more information
 # If this script is distributed, it must be accompanied by the Licence
 
+from datetime import datetime
+
 from django.db import models
 
 from tagging.models import TaggedItem
 
 class EntryManager(models.Manager):
     def public(self):
-        return self.get_query_set().filter(status=2)
+        return self.get_query_set().filter(status=2,
+                                           publish_date__lte=datetime.now())
 
     def related_by_categories(self, entry):
         """
