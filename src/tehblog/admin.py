@@ -12,8 +12,8 @@ from tehblog.models import Entry, Category
 class EntryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ['title']}
     list_display = ['title', 'slug', 'status', 'author', 'created_date',
-                    'modified_date', 'publish_date']
-    list_filter = ['status', 'author', 'publish_date']
+                    'modified_date', 'publish_date', 'allow_comments']
+    list_filter = ['status', 'author', 'publish_date', 'allow_comments']
     search_fields = ['title', 'slug', 'extract', 'content']
     date_hierarchy = 'publish_date'
 

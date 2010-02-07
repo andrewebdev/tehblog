@@ -62,6 +62,7 @@ class Entry(models.Model):
     created_date = models.DateTimeField(default=datetime.now)
     modified_date = models.DateTimeField(null=True, blank=True)
     publish_date = models.DateTimeField(null=True, blank=True)
+    allow_comments = models.BooleanField(default=True)
 
     # A custom manager
     objects = EntryManager()
