@@ -30,8 +30,8 @@ def entry_view(request, year, month, slug,
                template="tehblog/entry_view.html"):
     entry = get_object_or_404(
         Entry,
-        publish_date__year=int(year),
-        publish_date__month=int(month),
+        publish_date__year=year,
+        publish_date__month=month,
         slug=slug,
         status=Entry.PUBLIC
     )
