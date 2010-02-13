@@ -1,0 +1,118 @@
+h1. tehblog Documentation
+
+© Copyright 2010 Andre Engelbrecht. All Rights Reserved.
+
+h2. License
+
+Please see the LICENCE file for more information on the License
+
+h2. Introduction
+
+Text here
+
+h2. Requirements
+
+django-tagging is not required, but if you have it, you will have more features available.
+
+h2. Installing
+
+Installation instructions may vary depending on your development/production environment.
+For the simplist method to install system wide, just run:
+
+@python setup.py install@
+
+h3. Getting Started
+
+# Add @tehblog@ to your @INSTALLED_APPS@
+# Add the blog urls to your project: @(r'^blog/', include('tehblog.urls')),@
+# Run the tests just to check if everything is ok: @python manage.py test tehblog@
+# Create the database tables: @python manage.py syncdb@
+
+h3. Manager Methods
+
+tehblog has a two manager methods to help retrieving objects.
+
+h4. @Entry.objects.public()@
+
+returns only the published blog entries, while also ignoring entries published in the future.
+
+h4. @Entry.objects.related_by_categories(entry, count=None)@
+
+This method will return all entries related to @entry@ by category. If @count@ is specified, then we restrict the number of entries returned.
+
+h3. Views
+
+Tehblog uses django's generic views. Please see the django documentation for more on this.
+
+h3. Template Tags
+
+Tehblog also has a couple of template tags to retrieve categories and tags. Note that some of these tags require django-tagging to be installed.
+
+h4. @category_list(count=None)@
+
+Renders a list of categories. Only categories that contains published blog entries will be returned to the tag and rendered.
+The number of categories returned can be restricted with the ``count`` argument.
+
+*Usage*:
+@
+{% load tehblog_tags %}
+{% category_list 10 %}
+@
+
+The example above will render a list of 10 categories. If you want all categories to be returned just use @{% category_list %}@ without supplying the number of entries to return.
+
+h4. @tag_list(count=None)@
+
+*Requires django-tagging.*
+
+Renders a list of most used tags, for all published blog entries.
+
+*Usage*:
+@
+{% load tehblog_tags %}
+{% tag_list 10 %}
+@
+
+The example above will render a list of 10 most used tags. To return a full list of tags, use @{% tag_list %}@ without supplying the count argument.
+
+h4. @date_hierarchy()@
+
+This tag will show a dynamic date hierarchy, which can be used to search for entries in specific years, months or days.
+                                                                     
+Note that this tag is dependant on the generic views specified in urls. If you decide to customize the urls and views in any way, then this template tag may not function as intended. This tag can also become quite resource intensive due to the nature of the template tags used to generate the hierarchy. Take this into account as you add more and more entries.
+                                                                     
+*Usage*:
+@
+{% load tehblog_tags %}
+{% date_hierarchy %}
+@
+
+h4. @date_list(count=None)@
+
+This is a simpler version of the date_hierarchy tag, and will show recent dates as a list showing the month and year.
+Output would typically be: "November 2009"
+                                                                   
+You can also pass the ``count`` argument to limit the results.
+                                                                   
+*Usage*:
+@
+{% load tehblog_tags %}
+{% date_list 30 %}
+@
+
+The example above will render a list of up to 30 Month/Year dates. To return a full list of dates, just use the tag as is, @{% date_list %}@.
+
+h4. @related_entries(entry, count=5)@
+
+*Requires django-tagging.*
+
+Renders a list of related blog entries based on the Entry Tags.
+This tag will only work if django-tagging is installed.
+
+*Usage*:
+@
+{% load tehblog_tags %}
+{% related_entries entry %}
+@
+
+The example above will return 5 most recent blog entries related to @entry@, based on the tags used. To return a full list of related entries use @{% related_entries entry None %}@.
