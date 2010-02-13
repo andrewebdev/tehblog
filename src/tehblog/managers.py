@@ -14,13 +14,13 @@ class EntryManager(models.Manager):
         return self.get_query_set().filter(status=2,
                                            publish_date__lte=datetime.now())
 
-    def related_by_categories(self, entry):
+    def related_by_categories(self, entry, count=None):
         """
         This method will return all entries related to ``entry`` by category
-        if ``num`` is specified, then we restrict the number of entries returned
+        if ``count`` is specified, then we restrict the number of entries returned
 
         """
         entries = self.get_query_set().exclude(slug=entry.slug).filter(
             categories=entry.categories.all()
         ).distinct()
-        return entries
+        return entries[:count]
