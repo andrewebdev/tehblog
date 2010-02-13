@@ -18,6 +18,13 @@ register = template.Library()
 
 @register.inclusion_tag('tehblog/category_list_tag.html')
 def category_list(count=None):
+    """
+    Renders a list of categories. Only categories that contains published
+    blog entries will be returned to the tag and rendered.
+    The number of categories returned can be restricted with the ``count``
+    argument
+
+    """
     return {
         'category_list': Category.objects.all().exclude(
             entry__status__in=[1, 3],
@@ -26,6 +33,12 @@ def category_list(count=None):
 
 @register.inclusion_tag('tehblog/tag_list_tag.html')
 def tag_list(count=None):
+    """
+    Requires django-tagging.
+
+    Renders a list of Tags used for all published blog entries.
+
+    """
     try:
         return {
             'tag_list': Tag.objects.usage_for_model(
@@ -86,8 +99,8 @@ def date_list(count=None):
 @register.inclusion_tag('tehblog/related_entries_tag.html')
 def related_entries(entry, count=5):
     """
-    Renders two lists of related content. First list is related content by category,
-    second list is related by tags
+    Renders a list of related blog entries based on the Entry Tags.
+    This tag will only work if django-tagging is installed.
     
     usage:
     {% related_entries entry %}
