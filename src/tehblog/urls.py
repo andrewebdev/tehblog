@@ -10,7 +10,11 @@ from django.views.generic import date_based
 
 from tehblog.views import *
 from tehblog.models import Entry
-from tagging.views import tagged_object_list
+
+try:
+    from tagging.views import tagged_object_list
+except ImportError:
+    NO_TAGS = True
 
 tagged_objects_dict = {
     'queryset_or_model': Entry,
@@ -66,12 +70,6 @@ urlpatterns = patterns('',
         name="tehblog_category_entries"
     ),
 
-    url(r'tag/(?P<tag>[^/]+)/$',
-        tagged_object_list,
-        tagged_objects_dict,
-        name="tehblog_tag_entries"
-    ),
-
     # Date based views
     url(r'^archive/$', date_based.archive_index, archive_index_dict,
         name="tehblog_archive_index"
@@ -97,3 +95,12 @@ urlpatterns = patterns('',
         name="tehblog_entry_view"
     ),
 )
+
+if not NO_TAGS:
+    urlpatterns += patterns('',
+        url(r'tag/(?P<tag>[^/]+)/$',
+            tagged_object_list,
+            tagged_objects_dict,
+            name="tehblog_tag_entries"
+        ),
+    )

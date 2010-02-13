@@ -10,7 +10,23 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
-from tagging.fields import TagField
+# Snippet of code borrowed from django-photologue
+# attempt to load the django-tagging TagField from default location,
+# otherwise we substitude a dummy TagField.
+try:
+    from tagging.fields import TagField
+    tagfield_help_text = 'Separate tags with spaces, put quotes around multiple-word tags.'
+except ImportError:
+    class TagField(models.CharField):
+        def __init__(self, **kwargs):
+            default_kwargs = {'max_length': 255, 'blank': True}
+            default_kwargs.update(kwargs)
+            super(TagField, self).__init__(**default_kwargs)
+        def get_internal_type(self):
+            return 'CharField'
+    tagfield_help_text = 'Django-tagging was not found, tags will be treated as plain text.'
+## End snippet
+
 from tehblog.managers import EntryManager
 
 class Category(models.Model):

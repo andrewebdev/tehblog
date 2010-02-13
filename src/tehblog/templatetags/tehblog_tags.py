@@ -8,7 +8,11 @@
 from django import template
 
 from tehblog.models import Entry, Category 
-from tagging.models import Tag, TaggedItem
+
+try:
+    from tagging.models import Tag, TaggedItem
+except ImportError:
+    pass
 
 register = template.Library()
 
@@ -22,15 +26,18 @@ def category_list(count=None):
 
 @register.inclusion_tag('tehblog/tag_list_tag.html')
 def tag_list(count=None):
-    return {
-        'tag_list': Tag.objects.usage_for_model(
-            Entry,
-            counts=True,
-            filters={
-                'status': 2, # only published entries should add to the tags
-            },
-        )[:count]
-    }
+    try:
+        return {
+            'tag_list': Tag.objects.usage_for_model(
+                Entry,
+                counts=True,
+                filters={
+                    'status': 2, # only published entries should add to the tags
+                },
+            )[:count]
+        }
+    except:
+        return {}
 
 @register.inclusion_tag('tehblog/date_hierarchy_tag.html')
 def date_hierarchy():
@@ -86,8 +93,10 @@ def related_entries(entry, count=5):
     {% related_entries entry %}
 
     """
-    related_blog_entries = TaggedItem.objects.get_related(entry, Entry,
-                                                          num=count)
+    try:
+        related_blog_entries = TaggedItem.objects.get_related(
+            entry, Entry, num=count)
+    except: return {}
     return {
         'related_entries': related_blog_entries,
     }

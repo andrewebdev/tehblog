@@ -9,8 +9,6 @@ from datetime import datetime
 
 from django.db import models
 
-from tagging.models import TaggedItem
-
 class EntryManager(models.Manager):
     def public(self):
         return self.get_query_set().filter(status=2,
