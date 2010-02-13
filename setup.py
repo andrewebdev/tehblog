@@ -1,15 +1,12 @@
-from setuptools import setup, find_packages
+from distutils.core import setup
 
 setup(
     name="tehblog",
     version="0.2",
-    url="",
+    url="http://github.com/andrewebdev/tehblog",
     description="A simple django blogging app",
     author="Andre Engelbrech",
-    packages=find_packages('src'),
+    author_email="andre@teh-node.co.za",
+    packages=['tehblog'],
     package_dir={'': 'src'},
-    install_requires=[
-        'setuptools',
-        'django-tagging',
-    ],
 )
