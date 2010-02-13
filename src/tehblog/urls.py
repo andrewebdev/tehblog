@@ -13,8 +13,9 @@ from tehblog.models import Entry
 
 try:
     from tagging.views import tagged_object_list
+    TAGGING_FOUND = True
 except ImportError:
-    NO_TAGS = True
+    TAGGING_FOUND = False
 
 tagged_objects_dict = {
     'queryset_or_model': Entry,
@@ -96,7 +97,7 @@ urlpatterns = patterns('',
     ),
 )
 
-if not NO_TAGS:
+if TAGGING_FOUND:
     urlpatterns += patterns('',
         url(r'tag/(?P<tag>[^/]+)/$',
             tagged_object_list,
