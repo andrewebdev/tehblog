@@ -11,8 +11,7 @@ from django.db import models
 
 class EntryManager(models.Manager):
     def public(self):
-        return self.get_query_set().filter(status=2,
-                                           publish_date__lte=datetime.now())
+        return self.get_query_set().filter(status=2)
 
     def related_by_categories(self, entry, count=None):
         """
