@@ -75,7 +75,7 @@ class Entry(models.Model):
 
     # Meta Fields
     author = models.ForeignKey(User)
-    created_date = models.DateTimeField(default=datetime.now)
+    created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(null=True, blank=True)
     publish_date = models.DateTimeField(null=True, blank=True)
     allow_comments = models.BooleanField(default=True)
