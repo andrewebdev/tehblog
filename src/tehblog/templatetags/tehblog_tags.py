@@ -6,6 +6,7 @@
 # If this script is distributed, it must be accompanied by the Licence
 
 from django import template
+from django.db.models import Count
 
 from tehblog.models import Entry, Category 
 
@@ -91,12 +92,9 @@ def date_list(count=None):
     {% date_list 30 %}
 
     """
-    return {
-        'date_list': Entry.objects.public().dates(
-            'publish_date', 'month', order="DESC"
-        )[:count]
-    }
-
+    date_list = Entry.objects.public().dates('publish_date', 'month',
+        order="DESC")[:count]
+    return locals()
 
 @register.inclusion_tag('tehblog/related_entries_tag.html')
 def related_entries(entry, count=5):
@@ -115,3 +113,17 @@ def related_entries(entry, count=5):
     return {
         'related_entries': related_blog_entries,
     }
+
+## Filters
+@register.filter(name='entries_for_month')
+def entries_for_month(date_value):
+    """
+    Returns the number of entries that was published on a specific
+    date.
+
+    """
+    count = Entry.objects.public().filter(
+        publish_date__year=date_value.year,
+        publish_date__month=date_value.month,
+    ).count()
+    return count
