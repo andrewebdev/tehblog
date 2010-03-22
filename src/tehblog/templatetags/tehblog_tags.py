@@ -41,6 +41,7 @@ def tag_list(slice_count=None):
     be sliced to
 
     """
+    slice_count = str(slice_count)
     try:
         tag_list = Tag.objects.usage_for_model(
             Entry,
