@@ -32,25 +32,26 @@ def category_list(count=None):
     }
 
 @register.inclusion_tag('tehblog/tag_list_tag.html')
-def tag_list(count=None):
+def tag_list(slice_count=None):
     """
     Requires django-tagging.
-
     Renders a list of Tags used for all published blog entries.
+
+    ``slice_count`` is the number of items that the list in the template should
+    be sliced to
 
     """
     try:
-        return {
-            'tag_list': Tag.objects.usage_for_model(
-                Entry,
-                counts=True,
-                filters={
-                    'status': 2, # only published entries should add to the tags
-                },
-            )[:count]
-        }
+        tag_list = Tag.objects.usage_for_model(
+            Entry,
+            counts=True,
+            filters={
+                'status': 2, # only published entries should add to the tags
+            }
+        )
     except:
-        return {}
+        pass
+    return locals()
 
 @register.inclusion_tag('tehblog/date_hierarchy_tag.html')
 def date_hierarchy():
