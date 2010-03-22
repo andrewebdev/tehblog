@@ -1,18 +1,14 @@
 {% if tag_list %}
-    {% regroup tag_list|dictsortreversed:"count" by count as sorted_tags %}
+    {% if slice_count %}
+        {% regroup tag_list|dictsortreversed:"count"|slice:slice_count by count as sorted_tags %}
+    {% else %}
+        {% regroup tag_list|dictsortreversed:"count" by count as sorted_tags %}
+    {% endif %}
     <ul>
-        {% if slice_count %}
-            {% for tags in sorted_tags|slice:slice_count %}
-                {% for tag in tags.list %}
-                <li><a href="{% url tehblog_tag_entries tag %}">{{ tag }} ({{ tag.count }})</a></li>
-                {% endfor %}
-            {% endfor %}
-        {% else %}
-            {% for tags in sorted_tags %}
-                {% for tag in tags.list %}
-                <li><a href="{% url tehblog_tag_entries tag %}">{{ tag }} ({{ tag.count }})</a></li>
-                {% endfor %}
-            {% endfor %}
-        {% endif %}
+    {% for tags in sorted_tags %}
+        {% for tag in tags.list %}
+        <li><a href="{% url tehblog_tag_entries tag %}">{{ tag }} ({{ tag.count }})</a></li>
+        {% endfor %}
+    {% endfor %}
     </ul>
 {% endif %}
