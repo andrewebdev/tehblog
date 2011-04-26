@@ -10,24 +10,9 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
-# Snippet of code borrowed from django-photologue
-# attempt to load the django-tagging TagField from default location,
-# otherwise we substitude a dummy TagField.
-try:
-    from tagging.fields import TagField
-    tagfield_help_text = 'Separate tags with spaces, put quotes around multiple-word tags.'
-except ImportError:
-    class TagField(models.CharField):
-        def __init__(self, **kwargs):
-            default_kwargs = {'max_length': 255, 'blank': True}
-            default_kwargs.update(kwargs)
-            super(TagField, self).__init__(**default_kwargs)
-        def get_internal_type(self):
-            return 'CharField'
-    tagfield_help_text = 'Django-tagging was not found, tags will be treated as plain text.'
-## End snippet
-
+from tagging.fields import TagField
 from tehblog.managers import EntryManager
+from ostinato.statemachine import StateMachine
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
@@ -46,39 +31,31 @@ class Category(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('tehblog_category_entries', [self.slug])
+        return ('tehblog_category_list', [self.slug])
 
-class Entry(models.Model):
-    DRAFT = 1
-    PUBLIC = 2
-    REVIEW = 3
-    STATUS_CHOICES = (
-        (DRAFT, 'Draft'),
-        (PUBLIC, 'Public'),
-        (REVIEW, 'Review'),
-    )
-
+class Entry(models.Model, StateMachine):
     title = models.CharField(max_length=255)
     slug = models.SlugField(
         unique=True,
-        help_text="A unique, url-friendly slug based on the title"
-    )
+        help_text="A unique, url-friendly slug based on the title")
     extract = models.TextField(
-        null=True,
-        blank=True,
-        help_text="A small extract from the content"
-    )
+        null=True, blank=True,
+        help_text="A small extract from the content")
     content = models.TextField()
-    status = models.IntegerField(choices=STATUS_CHOICES, default=DRAFT)
-    tags = TagField()
+    tags = TagField(help_text='Separate tags with spaces,'
+                              'put quotes around multiple-word tags.')
     categories = models.ManyToManyField(Category)
 
-    # Meta Fields
+    # Publication Fields
     author = models.ForeignKey(User)
     created_date = models.DateTimeField(auto_now_add=True)
-    modified_date = models.DateTimeField(null=True, blank=True)
+    modified_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     publish_date = models.DateTimeField(null=True, blank=True)
     allow_comments = models.BooleanField(default=True)
+
+    # Required by StateMachine.
+    _sm_state = models.CharField(max_length=100,
+                                 default="Private", editable=False)
 
     # A custom manager
     objects = EntryManager()
@@ -101,8 +78,6 @@ class Entry(models.Model):
             'slug': self.slug,
         })
 
-    def save(self, *args, **kwargs):
-        self.modified_date = datetime.now()
-        if self.publish_date == None and self.status == self.PUBLIC:
+    def sm_post_action(self, **kwargs):
+        if kwargs['action'] == 'Publish':
             self.publish_date = datetime.now()
-        super(Entry, self).save(*args, **kwargs)
