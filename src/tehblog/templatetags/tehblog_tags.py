@@ -27,9 +27,8 @@ def category_list(count=None):
 
     """
     return {
-        'category_list': Category.objects.all().exclude(
-            entry__status__in=[1, 3],
-        )[:count]
+        'category_list': Category.objects.all().filter(
+            entry___sm_state='Published')[:count]
     }
 
 @register.inclusion_tag('tehblog/tag_list_tag.html')
@@ -44,13 +43,8 @@ def tag_list(slice_count=None):
     """
     slice_count = str(slice_count)
     try:
-        tag_list = Tag.objects.usage_for_model(
-            Entry,
-            counts=True,
-            filters={
-                'status': 2, # only published entries should add to the tags
-            }
-        )
+        tag_list = Tag.objects.usage_for_model(Entry, counts=True,
+            filters={ '_sm_state': 'Published' })
     except:
         pass
     return locals()

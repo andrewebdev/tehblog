@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load tagging_tags tehblog_tags %}
+
+{% block content %}
+	<section id="blog_content">
+		<div class="inner">
+			{% block content_main %}
+			{% endblock %}
+		</div>
+	</section>
+
+	<aside id="blog_aside">
+		<div class="inner">
+			<h3>Categories</h3>
+			{% category_list %}
+
+			<hr />
+
+			<h3>Archive</h3>
+			{% date_list %}
+
+			<hr />
+
+			<h3>Popular Tags</h3>
+			{% tag_list 10 %}
+
+			<hr />
+
+			{% tag_cloud_for_model tehblog.entry as tag_cloud with steps=9 distribution=linear %}
+			<h3>Tag Cloud</h3>
+			{% for tag in tag_cloud %}
+			<a  style="font-size: 1.{{ tag.font_size }}em;"
+				href="{% url tehblog_tag_entries tag %}">{{ tag }}</a>
+			{% endfor %}
+		</div>
+	</aside>
+{% endblock %}

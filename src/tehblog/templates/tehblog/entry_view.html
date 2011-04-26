@@ -1,0 +1,29 @@
+{% extends 'tehblog/base.html' %}
+{% load tagging_tags tehblog_tags %}
+
+{% block content_main %}
+	{% tags_for_object entry as tags %}
+
+	<h1 class="title">{{ entry.title }}</h1>
+
+	<div class="byline">
+		<a href="#">{{ entry.publish_date|date:"d" }}</a>
+		<a href="#">{{ entry.publish_date|date:"M" }}</a>
+		<a href="#">{{ entry.publish_date|date:"Y" }}</a>
+		by {{ entry.author.get_full_name }}
+	</div>
+
+	{% if tags %}
+		<p class="tagline">
+		{% for tag in tags %}
+			<a href="{% url tehblog_tag_entries tag %}">{{ tag }}</a>
+		{% endfor %}
+		</p>
+	{% endif %}
+
+	{{ entry.content }}
+
+	<hr />
+
+	{% related_entries entry %}
+{% endblock %}

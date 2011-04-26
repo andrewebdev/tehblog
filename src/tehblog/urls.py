@@ -6,102 +6,65 @@
 # If this script is distributed, it must be accompanied by the Licence
 
 from django.conf.urls.defaults import *
-from django.views.generic import date_based
+from django.views.generic import *
 
-from tehblog.views import *
-from tehblog.models import Entry
-
-try:
-    from tagging.views import tagged_object_list
-    TAGGING_FOUND = True
-except ImportError:
-    TAGGING_FOUND = False
-
-tagged_objects_dict = {
-    'queryset_or_model': Entry,
-    'related_tags': True,
-    'paginate_by': 10,
-    'template_name': 'tehblog/list_view.html',
-}
-
-archive_index_dict = {
-    'queryset': Entry.objects.public(),
-    'date_field': 'publish_date',
-    'num_latest': 10,
-    'template_name': 'tehblog/list_view.html',
-}
-
-archive_year_dict = {
-    'queryset': Entry.objects.public(),
-    'date_field': 'publish_date',
-    'make_object_list': True,
-    'template_name': 'tehblog/list_view.html',
-}
-
-archive_month_dict = {
-    'queryset': Entry.objects.public(),
-    'date_field': 'publish_date',
-    'template_name': 'tehblog/list_view.html',
-    'month_format': '%m',
-}
-
-archive_day_dict = {
-    'queryset': Entry.objects.public(),
-    'date_field': 'publish_date',
-    'template_name': 'tehblog/list_view.html',
-    'month_format': '%m',
-}
-
-object_detail_dict = {
-    'queryset': Entry.objects.public(),
-    'date_field': 'publish_date',
-    'month_format': '%m',
-    'template_name': 'tehblog/entry_view.html',
-    'template_object_name': 'entry',
-}
+from tagging.views import tagged_object_list
+from tehblog.models import Category, Entry
 
 urlpatterns = patterns('', 
-    url(r'^$', date_based.archive_index, archive_index_dict,
-        name="tehblog_landing"
-    ),
-
     # Categories and Tags
     url(r'^categories/(?P<slug>[-\w]+)/$',
-        category_entries,
-        name="tehblog_category_entries"
-    ),
+        DetailView.as_view(
+            slug_field='slug',
+            template_name='tehblog/list_view.html',
+            model=Category,
+            context_object_name="category",
+        ), name="tehblog_category_list"),
 
     # Date based views
-    url(r'^archive/$', date_based.archive_index, archive_index_dict,
-        name="tehblog_archive_index"
-    ),
-    url(r'^(?P<year>\d{4})/$',
-        date_based.archive_year,
-        archive_year_dict,
-        name="tehblog_year_view"
-    ),
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$',
-        date_based.archive_month,
-        archive_month_dict,
-        name="tehblog_month_view"
-    ),
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$',
-        date_based.archive_day,
-        archive_day_dict,
-        name="tehblog_day_view"
-    ),
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$',
-        date_based.object_detail,
-        object_detail_dict,
-        name="tehblog_entry_view"
-    ),
-)
+    url(r'^$', ArchiveIndexView.as_view(
+        context_object_name="entries",
+        template_name="tehblog/list_view.html",
+        queryset=Entry.objects.public(),
+    ), name="tehblog_archive_index"),
 
-if TAGGING_FOUND:
-    urlpatterns += patterns('',
-        url(r'tag/(?P<tag>[^/]+)/$',
-            tagged_object_list,
-            tagged_objects_dict,
-            name="tehblog_tag_entries"
-        ),
-    )
+    url(r'^(?P<year>\d{4})/$',
+        YearArchiveView.as_view(
+            queryset=Entry.objects.public(),
+            date_field='publish_date',
+            make_object_list=True,
+            template_name='tehblog/list_view.html',
+        ), name="tehblog_year_view"),
+                       
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$',
+        MonthArchiveView.as_view(
+            queryset=Entry.objects.public(),
+            date_field='publish_date',
+            month_format='%m',
+            template_name='tehblog/list_view.html',
+        ), name="tehblog_month_view"),
+
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$',
+        DayArchiveView.as_view(
+            queryset=Entry.objects.public(),
+            date_field='publish_date',
+            month_format='%m',
+            template_name='tehblog/list_view.html',
+        ), name="tehblog_day_view"),
+
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$',
+        DateDetailView.as_view(
+            queryset=Entry.objects.public(),
+            date_field='publish_date',
+            month_format='%m',
+            template_name='tehblog/entry_view.html',
+            context_object_name='entry',
+        ), name="tehblog_entry_view"),
+
+    url(r'tag/(?P<tag>[^/]+)/$', tagged_object_list, {
+            'queryset_or_model': Entry,
+            'related_tags': True,
+            'paginate_by': 10,
+            'template_name': 'tehblog/list_view.html',
+        }, name="tehblog_tag_entries"),
+)

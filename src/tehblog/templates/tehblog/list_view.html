@@ -1,0 +1,33 @@
+{% extends 'tehblog/base.html' %}
+
+{% block content_main %}
+    <h1>
+		Entries for
+		{{ tag }}
+        {{ category }}
+        {{ year }}
+        {{ month|date:"M Y" }}
+        {{ day|date:"D d M Y" }}
+    </h1>
+
+    <ul class="itemlist">
+		{% for entry in object_list %}
+		<li>
+			<h2><a href="{{ entry.get_absolute_url|titlecase }}">{{ entry.title }}</a></h2>
+
+			<div class="byline">
+				<a href="#">{{ entry.publish_date|date:"d" }}</a>
+				<a href="#">{{ entry.publish_date|date:"M" }}</a>
+				<a href="#">{{ entry.publish_date|date:"Y" }}</a>
+				by {{ entry.author.get_full_name }}
+			</div>
+
+			{{ entry.content|truncatewords:70 }}
+
+			<p><a href="{{ entry.get_absolute_url }}">Read More ...</a></p>
+
+			<hr />
+		</li>
+		{% endfor %}
+	</ul>
+{% endblock %}
