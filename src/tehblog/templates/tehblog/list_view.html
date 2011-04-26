@@ -13,7 +13,7 @@
     <ul class="itemlist">
 		{% for entry in object_list %}
 		<li>
-			<h2><a href="{{ entry.get_absolute_url|titlecase }}">{{ entry.title }}</a></h2>
+			<h2><a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></h2>
 
 			<div class="byline">
 				<a href="#">{{ entry.publish_date|date:"d" }}</a>

@@ -23,26 +23,28 @@ urlpatterns = patterns('',
 
     # Date based views
     url(r'^$', ArchiveIndexView.as_view(
-        context_object_name="entries",
-        template_name="tehblog/list_view.html",
         queryset=Entry.objects.public(),
+        date_field='publish_date',
+        template_name="tehblog/list_view.html",
+        context_object_name="entries",
+        allow_empty=True,
     ), name="tehblog_archive_index"),
 
-    url(r'^(?P<year>\d{4})/$',
-        YearArchiveView.as_view(
-            queryset=Entry.objects.public(),
-            date_field='publish_date',
-            make_object_list=True,
-            template_name='tehblog/list_view.html',
-        ), name="tehblog_year_view"),
+    url(r'^(?P<year>\d{4})/$', YearArchiveView.as_view(
+        queryset=Entry.objects.public(),
+        date_field='publish_date',
+        make_object_list=True,
+        template_name='tehblog/list_view.html',
+        allow_empty=True,
+    ), name="tehblog_archive_year"),
                        
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$',
-        MonthArchiveView.as_view(
-            queryset=Entry.objects.public(),
-            date_field='publish_date',
-            month_format='%m',
-            template_name='tehblog/list_view.html',
-        ), name="tehblog_month_view"),
+    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$', MonthArchiveView.as_view(
+        queryset=Entry.objects.public(),
+        date_field='publish_date',
+        month_format='%m',
+        template_name='tehblog/list_view.html',
+        allow_empty=True,
+    ), name="tehblog_archive_month"),
 
     url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$',
         DayArchiveView.as_view(
@@ -50,7 +52,8 @@ urlpatterns = patterns('',
             date_field='publish_date',
             month_format='%m',
             template_name='tehblog/list_view.html',
-        ), name="tehblog_day_view"),
+            allow_empty=True,
+        ), name="tehblog_archive_day"),
 
     url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$',
         DateDetailView.as_view(

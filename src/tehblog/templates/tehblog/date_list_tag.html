@@ -4,7 +4,7 @@
 <ul>
     <li><a href="{% url tehblog_archive_index %}">Latest Entries</a></li>
     {% for date in date_list %}
-    <li><a href="{% url tehblog_month_view year=date|date:"Y" month=date|date:"m" %}">{{ date|date:"F Y" }} ({{ date|entries_for_month }})</a></li>
+    <li><a href="{% url tehblog_archive_month year=date|date:"Y" month=date|date:"m" %}">{{ date|date:"F Y" }} ({{ date|entries_for_month }})</a></li>
     {% endfor %}
 </ul>
 {% endif %}

@@ -83,25 +83,58 @@ class EntryTestCase(BaseTestCase):
 
         # Test the url
         today = datetime.now()
-        day = today.strftime("%d")
-        month = today.strftime("%m")
-        year = today.strftime("%Y")
-        test_url = '%s/%s/%s/%s/' % (year, month, day, self.entry_news.slug)
+        url_args = [today.strftime("%Y"), today.strftime("%m"),
+                     today.strftime("%d"), self.entry_news.slug]
+        test_url = '%s/%s/%s/%s/' % (url_args[0], url_args[1], url_args[2],
+                                     url_args[3])
         entry_url = self.entry_news.get_absolute_url()
 
         self.assertEquals(entry_url[-len(test_url):], test_url)
 
         # Test reverse lookups
-        self.assertEquals(reverse(
-            'tehblog_entry_view',
-            args=[year, month, day, self.entry_news.slug]
-        )[-len(test_url):], test_url)
+        self.assertEquals(reverse('tehblog_entry_view',
+                                  args=url_args)[-len(test_url):], test_url)
 
         # Make a request to the view and check the context
         c = Client()
         response = c.get(entry_url)
         self.failUnless(response.status_code == 200,
                        "Failed with status_code %s" % response.status_code)
+        self.assertEquals(response.context['entry'], self.entry_news)
+
+    def testDateViews(self):
+        c = Client()
+        today = datetime.now()
+        date_args = [today.strftime("%Y"), today.strftime("%m"),
+                     today.strftime("%d")]
+
+        # Test the Archive View
+        response = c.get(reverse('tehblog_archive_index'))
+        self.failUnless(response.status_code == 200, response.content)
+        self.failUnless(not response.context['object_list'])
+
+        # Lets first publish the items so that they have publish dates
+        self.entry_news.sm_take_action('Publish')
+        self.entry_news.save()
+        self.entry_demo.sm_take_action('Publish')
+        self.entry_demo.save()
+
+        # Test the rest of the Date Views
+        response = c.get(reverse('tehblog_archive_index'))
+        self.failUnless(response.status_code == 200, response.content)
+        self.failUnless(len(response.context['object_list']) == 2)
+
+        response = c.get(reverse('tehblog_archive_year', args=[date_args[0]]))
+        self.failUnless(response.status_code == 200, response.content)
+        self.failUnless(len(response.context['object_list']) == 2)
+
+        response = c.get(reverse('tehblog_archive_month', args=date_args[:2]))
+        self.failUnless(response.status_code == 200, response.content)
+        self.failUnless(len(response.context['object_list']) == 2)
+
+        response = c.get(reverse('tehblog_archive_day', args=date_args))
+        self.failUnless(response.status_code == 200, response.content)
+        self.failUnless(len(response.context['object_list']) == 2)
 
     def testRelatedByEntries(self):
         entries = Entry.objects.related_by_categories(self.entry_demo)
@@ -115,14 +148,12 @@ class EntryTestCase(BaseTestCase):
         test_category = Category.objects.create(
                 title='Extra',
                 slug='extra',
-                description='Extra category'
-        )
+                description='Extra category')
         test_entry = Entry.objects.create(
                 title='Extra Entry',
                 slug='extra-entry',
                 content='A Extra Entry',
-                author=self.user
-        )
+                author=self.user)
         test_entry.categories.add(test_category)
         
         # ok, now test the related entries again
