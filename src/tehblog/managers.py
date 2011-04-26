@@ -17,9 +17,7 @@ class EntryManager(models.Manager):
         """
         This method will return all entries related to ``entry`` by category
         if ``count`` is specified, then we restrict the number of entries returned
-
         """
-        entries = self.get_query_set().exclude(slug=entry.slug).filter(
-            categories=entry.categories.all()
-        ).distinct()
+        entries = self.public().exclude(slug=entry.slug
+            ).filter(categories=entry.categories.all()).distinct()
         return entries[:count]

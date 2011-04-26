@@ -103,33 +103,28 @@ class EntryTestCase(BaseTestCase):
         self.failUnless(response.status_code == 200,
                        "Failed with status_code %s" % response.status_code)
 
-#     def testEntryUpdate(self):
-#         self.entry_demo.status = Entry.PUBLIC
-#         self.entry_demo.save()
-#         # After saved, public objects should now be 2
-#         self.assertEquals(len(Entry.objects.public()), 2)
-# 
-#     def testRelatedByEntries(self):
-#         entries = Entry.objects.related_by_categories(self.entry_demo)
-#         self.assertEquals(len(entries), 1)
-#         # The entry returned should not be the one passed in the query
-#         self.assertEquals(entries[0].slug, "test-news-entry")
-# 
-#         # Add one more blog category and entry that will be unique
-#         test_category = Category.objects.create(
-#                 title='Extra',
-#                 slug='extra',
-#                 description='Extra category'
-#         )
-#         test_entry = Entry.objects.create(
-#                 title='Extra Entry',
-#                 slug='extra-entry',
-#                 content='A Extra Entry',
-#                 author=self.user,
-#                 status=Entry.PUBLIC,
-#         )
-#         test_entry.categories.add(test_category)
-#         
-#         # ok, now test the related entries again
-#         entries = Entry.objects.related_by_categories(test_entry)
-#         self.assertEquals(len(entries), 0)
+    def testRelatedByEntries(self):
+        entries = Entry.objects.related_by_categories(self.entry_demo)
+        self.assertEquals(len(entries), 0)
+        self.entry_news.sm_take_action('Publish')
+        self.entry_news.save()
+        entries = Entry.objects.related_by_categories(self.entry_demo)
+        self.assertEquals(len(entries), 1)
+
+        # Add one more blog category and entry that will be unique
+        test_category = Category.objects.create(
+                title='Extra',
+                slug='extra',
+                description='Extra category'
+        )
+        test_entry = Entry.objects.create(
+                title='Extra Entry',
+                slug='extra-entry',
+                content='A Extra Entry',
+                author=self.user
+        )
+        test_entry.categories.add(test_category)
+        
+        # ok, now test the related entries again
+        entries = Entry.objects.related_by_categories(test_entry)
+        self.assertEquals(len(entries), 0)
