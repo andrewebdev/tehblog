@@ -7,9 +7,9 @@
 	<h1 class="title">{{ entry.title }}</h1>
 
 	<div class="byline">
-		<a href="#">{{ entry.publish_date|date:"d" }}</a>
-		<a href="#">{{ entry.publish_date|date:"M" }}</a>
-		<a href="#">{{ entry.publish_date|date:"Y" }}</a>
+		{{ entry.publish_date|date:"d" }}
+		{{ entry.publish_date|date:"M" }}
+		{{ entry.publish_date|date:"Y" }}
 		by {{ entry.author.get_full_name }}
 	</div>
 

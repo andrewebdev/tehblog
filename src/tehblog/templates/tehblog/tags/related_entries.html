@@ -3,8 +3,10 @@
     <h3>Related Entries</h3>
     <ul>
         {% for entry in related_entries %}
-        <li>{{ entry.publish_date|date:"d D M Y" }} :: <a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></li>
+        <li><a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a> - <small>{{ entry.publish_date|date:"d D M Y" }}</small></li>
         {% endfor %}
     </ul>
 </div>
+{% else %}
+    <p><em>There are currently no other entries related to this one.</em></p>
 {% endif %}
