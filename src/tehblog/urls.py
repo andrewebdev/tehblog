@@ -9,17 +9,20 @@ from django.conf.urls.defaults import *
 from django.views.generic import *
 
 from tagging.views import tagged_object_list
-from tehblog.models import Category, Entry
+from views import CategoryView
+from models import Entry
 
 urlpatterns = patterns('', 
     # Categories and Tags
     url(r'^categories/(?P<slug>[-\w]+)/$',
-        DetailView.as_view(
-            slug_field='slug',
-            template_name='tehblog/list_view.html',
-            model=Category,
-            context_object_name="category",
-        ), name="tehblog_category_list"),
+        CategoryView.as_view(), name="tehblog_category_list"),
+
+    url(r'tag/(?P<tag>[^/]+)/$', tagged_object_list, {
+            'queryset_or_model': Entry,
+            'related_tags': True,
+            'paginate_by': 10,
+            'template_name': 'tehblog/list_view.html',
+        }, name="tehblog_tag_entries"),
 
     # Date based views
     url(r'^$', ArchiveIndexView.as_view(
@@ -63,11 +66,4 @@ urlpatterns = patterns('',
             template_name='tehblog/entry_view.html',
             context_object_name='entry',
         ), name="tehblog_entry_view"),
-
-    url(r'tag/(?P<tag>[^/]+)/$', tagged_object_list, {
-            'queryset_or_model': Entry,
-            'related_tags': True,
-            'paginate_by': 10,
-            'template_name': 'tehblog/list_view.html',
-        }, name="tehblog_tag_entries"),
 )
