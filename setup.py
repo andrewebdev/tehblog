@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="tehblog",
-    version="0.2",
+    version="1.0",
     url="http://github.com/andrewebdev/tehblog",
     description="A simple django blogging app",
     author="Andre Engelbrech",
