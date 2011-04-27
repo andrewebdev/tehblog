@@ -17,7 +17,7 @@ except ImportError:
 
 register = template.Library()
 
-@register.inclusion_tag('tehblog/category_list_tag.html')
+@register.inclusion_tag('tehblog/tags/category_list.html')
 def category_list(count=None):
     """
     Renders a list of categories. Only categories that contains published
@@ -31,7 +31,7 @@ def category_list(count=None):
             entry___sm_state='Published')[:count]
     }
 
-@register.inclusion_tag('tehblog/tag_list_tag.html')
+@register.inclusion_tag('tehblog/tags/tag_list.html')
 def tag_list(slice_count=None):
     """
     Requires django-tagging.
@@ -49,7 +49,7 @@ def tag_list(slice_count=None):
         pass
     return locals()
 
-@register.inclusion_tag('tehblog/date_hierarchy_tag.html')
+@register.inclusion_tag('tehblog/tags/date_hierarchy.html')
 def date_hierarchy():
     """
     This tag will show a dynamic date hierarchy, which can
@@ -68,7 +68,7 @@ def date_hierarchy():
         'hierarchy': Entry.objects.public().order_by('publish_date').values('publish_date')
     }
 
-@register.inclusion_tag('tehblog/date_list_tag.html')
+@register.inclusion_tag('tehblog/tags/date_list.html')
 def date_list(count=None):
     """
     This is a simpler version of the date_hierarchy tag, and will show
@@ -90,7 +90,7 @@ def date_list(count=None):
         order="DESC")[:count]
     return locals()
 
-@register.inclusion_tag('tehblog/related_entries_tag.html')
+@register.inclusion_tag('tehblog/tags/related_entries.html')
 def related_entries(entry, count=5):
     """
     Renders a list of related blog entries based on the Entry Tags.
