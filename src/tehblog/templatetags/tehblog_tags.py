@@ -28,7 +28,7 @@ def category_list(count=None):
     """
     return {
         'category_list': Category.objects.all().filter(
-            entry___sm_state='Published')[:count]
+            entry___sm_state='Published').distinct()[:count]
     }
 
 @register.inclusion_tag('tehblog/tags/tag_list.html')
