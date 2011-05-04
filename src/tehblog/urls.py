@@ -18,7 +18,7 @@ urlpatterns = patterns('',
         CategoryView.as_view(), name="tehblog_category_list"),
 
     url(r'tag/(?P<tag>[^/]+)/$', tagged_object_list, {
-            'queryset_or_model': Entry,
+            'queryset_or_model': Entry.objects.public(),
             'related_tags': True,
             'paginate_by': 10,
             'template_name': 'tehblog/list_view.html',
