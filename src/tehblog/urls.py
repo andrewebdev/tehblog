@@ -8,8 +8,7 @@
 from django.conf.urls.defaults import *
 from django.views.generic import *
 
-from tagging.views import tagged_object_list
-from views import CategoryView
+from views import CategoryView, TagView
 from models import Entry
 
 urlpatterns = patterns('', 
@@ -17,12 +16,8 @@ urlpatterns = patterns('',
     url(r'^categories/(?P<slug>[-\w]+)/$',
         CategoryView.as_view(), name="tehblog_category_list"),
 
-    url(r'tag/(?P<tag>[^/]+)/$', tagged_object_list, {
-            'queryset_or_model': Entry.objects.public(),
-            'related_tags': True,
-            'paginate_by': 10,
-            'template_name': 'tehblog/list_view.html',
-        }, name="tehblog_tag_entries"),
+    url(r'tag/(?P<tag>[^/]+)/$',
+        TagView.as_view(), name="tehblog_tag_entries"),
 
     # Date based views
     url(r'^$', ArchiveIndexView.as_view(
