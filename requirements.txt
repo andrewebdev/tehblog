@@ -1,2 +1,3 @@
 tehblog
 django-tagging
+-e git://github.com/andrewebdev/django-ostinato.git=django-ostinato

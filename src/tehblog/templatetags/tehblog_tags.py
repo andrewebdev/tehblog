@@ -120,53 +120,73 @@ def entries_for_month(date_value):
     ).count()
     return count
 
-class EmbedFilter(object):
+## ContentModifiers and related examples
+class ContentMod(object):
     """
-    Special class to register render functions for use with the embed
-    filter.
+    Special class to register render functions that will manipulate
+    blog content in some way. These functions are accessed by the
+    ``embed()`` filter below.
     """
-    _functions = []
+    _modifiers = []
 
     @classmethod
     def register(cls, func_name, func):
-        cls._functions.append({'name': func_name, 'function': func})
+        cls._modifiers.append({'name': func_name, 'func': func})
 
-    @classmethod
-    def get_function(cls, func_name):
-        if cls._functions:
-            for f in cls._functions:
-                if f['name'] == func_name: return f['function']
-        return None
-
-    @classmethod
-    def get_functions(cls):
+    def modifiers(self, exclude=[]):
         to_return = []
-        for func in cls._functions:
-            to_return.append(func['function'])
+        for func in self._modifiers:
+            if func['name'] not in exclude:
+                to_return.append(func['func'])
         return to_return
+
+    def __getitem__(self, what):
+        for func in self._modifiers:
+            if func['name'] == what: return func['func']
+        return super(ContentMod, self).__getattr__(what)
     
-@register.filter(name='embed')
-def embed(content, function=None):
+@register.filter(name='modify')
+def modify(content, mods=None):
     """
     This filter will call func() with content being passed to it as a
     string.
 
-    ``function`` - A string containing the name of the function that
-    parses content. The funciton will typically perform a task like,
-    looking for a specific regex pattern in ``content`` and replace
-    that pattern with Html that renders the element.
+    ``mods`` is a comma seperated list of modifiers that we want the
+    content to be passed through.
+    
+    There are three ways in which this filter can be used.
 
-    If ``function`` is not supplied, we will automatically apply all
-    functions to the filter.
+    1. if ``mods`` is not supplied, then by default we will run the
+    content through _all_ modifiers
+    
+    2. if ``mods`` is supplied, then we will only run the content through
+    modifiers specified in the list.
+
+    3. if ``mods`` starts with "!" we will use all modifiers, _except_
+    for any modifiers in the list immediately following the "!"
+
+    Examples:
+        {{ content|modify }}
+        {{ content|modify:"youtube,gallery" }}
+        {{ content|modify:"!snip,youtube" }}
+
     """
-    if function:
-        func = EmbedFilter.get_function(function)
-        if func: return func(content)
-        else: return content
+    cm = ContentMod()
+    if mods:
+        if mods[0] == "!":
+            # Exclusion List
+            mods = mods[1:].split(',')
+            for func in cm.modifiers(exclude=mods):
+                content = func(content)
+        else:
+            # Inclusion List
+            mods = mods.split(',')
+            for mod in mods:
+                content = cm[mod](content)
     else:
-        for func in EmbedFilter.get_functions():
+        for func in cm.modifiers():
             content = func(content)
-        return content
+    return content
 
 def youtube(content):
     """
@@ -180,16 +200,22 @@ def youtube(content):
             allowfullscreen></iframe>
     ''', content)
 
-def pl_gallery(content):
+def snip(content):
     """
-    Example function showing how a photologue gallery can be
-    embedded based on it's slug.
+    This is a special modifier, that will look for a marker in
+    ``content`` and if found, it will truncate the content at that
+    point.
 
-    Note: This is just an example and is a pretty pointless function to
-    use as is. But free to copy this and modify the result.
+    This way the editor can decide where he wants content to be truncated,
+    for use in the various list views.
 
+    The marker we will look for in the content is {{{snip}}}
     """
-    regex = re.compile(r"\{{3}gallery=(?P<slug>[-\w]+)\}{3}")
-    return regex.sub('''PHOTOLOGUE GALLERY \g<slug> HERE''', content)
+    return content[:content.find('{{{snip}}}')] + "..."
 
-EmbedFilter.register('youtube', youtube)
+def hide_snip(content):
+    return content.replace('{{{snip}}}', '')
+
+ContentMod.register('youtube', youtube)
+ContentMod.register('snip', snip)
+ContentMod.register('hide_snip', hide_snip)
