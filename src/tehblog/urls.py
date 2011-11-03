@@ -36,7 +36,7 @@ urlpatterns = patterns('',
         allow_empty=True,
     ), name="tehblog_archive_year"),
                        
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/$', MonthArchiveView.as_view(
+    url(r'^(?P<year>\d{4})/(?P<month>\d{1,2})/$', MonthArchiveView.as_view(
         queryset=Entry.objects.public(),
         date_field='publish_date',
         month_format='%m',
@@ -44,7 +44,7 @@ urlpatterns = patterns('',
         allow_empty=True,
     ), name="tehblog_archive_month"),
 
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/$',
+    url(r'^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/$',
         DayArchiveView.as_view(
             queryset=Entry.objects.public(),
             date_field='publish_date',
@@ -53,7 +53,7 @@ urlpatterns = patterns('',
             allow_empty=True,
         ), name="tehblog_archive_day"),
 
-    url(r'^(?P<year>\d{4})/(?P<month>\d{2})/(?P<day>\d{2})/(?P<slug>[-\w]+)/$',
+    url(r'^(?P<year>\d{4})/(?P<month>\d{1,2})/(?P<day>\d{1,2})/(?P<slug>[-\w]+)/$',
         DateDetailView.as_view(
             queryset=Entry.objects.public(),
             date_field='publish_date',
