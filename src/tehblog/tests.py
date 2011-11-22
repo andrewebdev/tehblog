@@ -14,6 +14,20 @@ from django.contrib.auth.models import User
 
 from tehblog.models import *
 
+
+class BlogCategoryModelTestCase(TestCase):
+
+    def setUp(self):
+        self.category1 = Category.objects.create(title='Category 1',
+            slug='category-1')
+        self.category2 = Category.objects.create(title='Category 2',
+            slug='category-2')
+
+    def test_model_exists(self):
+        # tested via setUp()
+        pass
+
+
 class BaseTestCase(TestCase):
     def setUp(self):
         self.client = Client()
