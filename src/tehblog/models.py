@@ -14,13 +14,13 @@ from tagging.fields import TagField
 from tehblog.managers import EntryManager
 from ostinato.statemachine import StateMachine
 
+
 class Category(models.Model):
     title = models.CharField(max_length=255)
-    slug = models.SlugField(
-        unique=True,
-        help_text="A unique, url-friendly slug based on the title"
-    )
-    description = models.TextField(help_text="A short description of the category")
+    slug = models.SlugField(unique=True,
+        help_text="A unique, url-friendly slug based on the title")
+    description = models.TextField(
+        help_text="A short description of the category")
 
     class Meta:
         verbose_name = "Category"
@@ -32,6 +32,7 @@ class Category(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('tehblog_category_list', [self.slug])
+
 
 class Entry(models.Model, StateMachine):
     title = models.CharField(max_length=255)
@@ -61,7 +62,7 @@ class Entry(models.Model, StateMachine):
     objects = EntryManager()
 
     class Meta:
-        ordering = ('-publish_date',)
+        ordering = ('-publish_date', '-created_date')
         get_latest_by = 'publish_date'
         verbose_name = "Entry"
         verbose_name_plural = "Entries"
@@ -70,13 +71,20 @@ class Entry(models.Model, StateMachine):
         return "%s" % self.title
 
     @models.permalink
+    def get_url(self, *args):
+        return args
+
     def get_absolute_url(self):
-        return ('tehblog_entry_view', None, {
-            'year': self.publish_date.year,
-            'month': self.publish_date.strftime("%m"),
-            'day': self.publish_date.strftime("%d"),
-            'slug': self.slug,
-        })
+        if self.publish_date:
+            return self.get_url(*('tehblog_entry_view', None, {
+                'year': self.publish_date.year,
+                'month': self.publish_date.strftime("%m"),
+                'day': self.publish_date.strftime("%d"),
+                'slug': self.slug,
+            }))
+        else:
+            # Should we raise a 404 or message that entry is not published?
+            return ''
 
     def sm_post_action(self, **kwargs):
         if kwargs['action'] == 'Publish':

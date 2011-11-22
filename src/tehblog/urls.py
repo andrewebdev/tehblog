@@ -11,7 +11,8 @@ from django.views.generic import *
 from views import CategoryView, TagView
 from models import Entry
 
-urlpatterns = patterns('', 
+
+urlpatterns = patterns('',
     # Categories and Tags
     url(r'^categories/(?P<slug>[-\w]+)/$',
         CategoryView.as_view(), name="tehblog_category_list"),

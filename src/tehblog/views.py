@@ -4,6 +4,7 @@ from django.views.generic import DetailView, TemplateView
 from tagging.models import Tag, TaggedItem
 from models import Category, Entry
 
+
 class CategoryView(DetailView):
     model = Category
     context_object_name = "category"
@@ -14,6 +15,7 @@ class CategoryView(DetailView):
         context['object_list'] = Entry.objects.public().filter(
             categories=self.get_object())
         return context
+
 
 class TagView(TemplateView):
     template_name = 'tehblog/list_view.html'

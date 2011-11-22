@@ -5,171 +5,150 @@
 # Please see the text file LICENCE for more information
 # If this script is distributed, it must be accompanied by the Licence
 
+import warnings
 from datetime import datetime
 
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 
 from tehblog.models import *
 
+warnings.simplefilter('always')
 
-class BlogCategoryModelTestCase(TestCase):
+class BaseTestCase(TestCase):
+
+    urls = 'tehblog.urls'
 
     def setUp(self):
-        self.category1 = Category.objects.create(title='Category 1',
-            slug='category-1')
-        self.category2 = Category.objects.create(title='Category 2',
-            slug='category-2')
+        self.user = User.objects.create_user('user', 'user@example.com')
+        self.user.set_password('secret')
+        self.user.save()
+
+        # Categories
+        self.category1 = Category.objects.create(
+            title='Category 1', slug='category-1',
+            description='Category 1 Description')
+        self.category2 = Category.objects.create(
+            title='Category 2', slug='category-2',
+            description='Category 2 Description')
+
+        # Entries
+        self.entry1 = Entry.objects.create(title='Entry 1', slug='entry-1',
+            content='Entry 1 Content', author=self.user)
+
+        self.entry1.categories.add(self.category1)
+        self.entry1.categories.add(self.category2)
+        self.entry1.save()
+
+        self.entry2 = Entry.objects.create(title='Entry 2', slug='entry-2',
+            content='Entry 2 Content', author=self.user)
+
+        self.entry2.categories.add(self.category1)
+        self.entry2.save()
+
+
+class BlogCategoryModelTestCase(BaseTestCase):
 
     def test_model_exists(self):
         # tested via setUp()
         pass
 
+    def test_unicode(self):
+        self.assertEqual('Category 1', self.category1.__unicode__())
 
-class BaseTestCase(TestCase):
-    def setUp(self):
-        self.client = Client()
+    def test_verbose_name_plural(self):
+        self.assertEqual('Categories', Category._meta.verbose_name_plural)
 
-        self.user = User.objects.create_user('user', 'user@example.com', 'userpass')
+    def test_absolute_url(self):
+        self.assertEqual('/categories/category-1/', self.category1.get_absolute_url())
 
-        # Categories setup
-        self.category_news = Category.objects.create(
-                title='News',
-                slug='news',
-                description='Latest News'
-        )
-        self.category_general = Category.objects.create(
-                title='General',
-                slug='general',
-                description='General or random other topics'
-        )
 
-        # Entry setup
-        self.entry_news = Entry.objects.create(
-                title='Test News Entry',
-                slug='test-news-entry',
-                content='Some demo content',
-                author=self.user,
-        )
-        self.entry_news.categories.add(self.category_news)
-        self.entry_news.categories.add(self.category_general)
+class BlogEntryModelTestCase(BaseTestCase):
 
-        self.entry_demo = Entry.objects.create(
-                title='Demo Entry',
-                slug='demo-entry',
-                content='A demo entry belonging to multiple categories',
-                author=self.user,
-        )
-        self.entry_demo.categories.add(self.category_news)
-        self.entry_demo.categories.add(self.category_general)
+    def test_model_exists(self):
+        # already tested in setUp()
+        pass
 
-class CategoryTestCase(BaseTestCase):
-    def testCategoryURL(self):
-        self.assertEquals(
-                self.category_general.get_absolute_url()[-19:],
-                'categories/general/'
-        )
-        # Test reverse lookups
-        self.assertEquals(
-                reverse('tehblog_category_list', args=['news'])[-16:],
-                'categories/news/'
-        )
+    def test_unicode(self):
+        self.assertEqual('Entry 1', self.entry1.__unicode__())
 
-class EntryTestCase(BaseTestCase):
-    def testStateChange(self):
-        self.assertEquals(len(Entry.objects.public()), 0)
-        self.entry_news.sm_take_action('Publish')
-        self.entry_news.save()
-        self.assertEquals(len(Entry.objects.public()), 1)
+    def test_verbose_name_plural(self):
+        self.assertEqual('Entries', Entry._meta.verbose_name_plural)
 
-    def testEntryView(self):
-        """
-        Test the urls and reverse lookups for a entry.
-        We have to slice away the front part of the url, since this will be
-        different based on the specific project urls.py
-
-        """
-        # First we need to publish our item
-        self.entry_news.sm_take_action('Publish')
-        self.entry_news.save()
-
-        # Test the url
-        today = datetime.now()
-        url_args = [today.strftime("%Y"), today.strftime("%m"),
-                     today.strftime("%d"), self.entry_news.slug]
-        test_url = '%s/%s/%s/%s/' % (url_args[0], url_args[1], url_args[2],
-                                     url_args[3])
-        entry_url = self.entry_news.get_absolute_url()
-
-        self.assertEquals(entry_url[-len(test_url):], test_url)
-
-        # Test reverse lookups
-        self.assertEquals(reverse('tehblog_entry_view',
-                                  args=url_args)[-len(test_url):], test_url)
-
-        # Make a request to the view and check the context
-        c = Client()
-        response = c.get(entry_url)
-        self.failUnless(response.status_code == 200,
-                       "Failed with status_code %s" % response.status_code)
-        self.assertEquals(response.context['entry'], self.entry_news)
-
-    def testDateViews(self):
-        c = Client()
-        today = datetime.now()
-        date_args = [today.strftime("%Y"), today.strftime("%m"),
-                     today.strftime("%d")]
-
-        # Test the Archive View
-        response = c.get(reverse('tehblog_archive_index'))
-        self.failUnless(response.status_code == 200, response.content)
-        self.failUnless(not response.context['object_list'])
-
-        # Lets first publish the items so that they have publish dates
-        self.entry_news.sm_take_action('Publish')
-        self.entry_news.save()
-        self.entry_demo.sm_take_action('Publish')
-        self.entry_demo.save()
-
-        # Test the rest of the Date Views
-        response = c.get(reverse('tehblog_archive_index'))
-        self.failUnless(response.status_code == 200, response.content)
-        self.failUnless(len(response.context['object_list']) == 2)
-
-        response = c.get(reverse('tehblog_archive_year', args=[date_args[0]]))
-        self.failUnless(response.status_code == 200, response.content)
-        self.failUnless(len(response.context['object_list']) == 2)
-
-        response = c.get(reverse('tehblog_archive_month', args=date_args[:2]))
-        self.failUnless(response.status_code == 200, response.content)
-        self.failUnless(len(response.context['object_list']) == 2)
-
-        response = c.get(reverse('tehblog_archive_day', args=date_args))
-        self.failUnless(response.status_code == 200, response.content)
-        self.failUnless(len(response.context['object_list']) == 2)
-
-    def testRelatedByEntries(self):
-        entries = Entry.objects.related_by_categories(self.entry_demo)
-        self.assertEquals(len(entries), 0)
-        self.entry_news.sm_take_action('Publish')
-        self.entry_news.save()
-        entries = Entry.objects.related_by_categories(self.entry_demo)
-        self.assertEquals(len(entries), 1)
-
-        # Add one more blog category and entry that will be unique
-        test_category = Category.objects.create(
-                title='Extra',
-                slug='extra',
-                description='Extra category')
-        test_entry = Entry.objects.create(
-                title='Extra Entry',
-                slug='extra-entry',
-                content='A Extra Entry',
+    def test_slug_already_exists(self):
+        with self.assertRaises(IntegrityError):
+            invalid = Entry.objects.create(title='Invalid', slug='entry-1',
                 author=self.user)
-        test_entry.categories.add(test_category)
-        
-        # ok, now test the related entries again
-        entries = Entry.objects.related_by_categories(test_entry)
-        self.assertEquals(len(entries), 0)
+
+    def test_absolute_url_when_not_published(self):
+        self.assertEqual('', self.entry1.get_absolute_url())
+
+    def test_absolute_url_when_published(self):
+        today = datetime.today()
+        self.entry1.publish_date = datetime.now()
+        self.assertEqual('/%s/%s/%s/entry-1/' % (
+            today.year, today.month, today.day,
+        ), self.entry1.get_absolute_url())
+            
+    def testStateChange(self):
+        self.assertFalse(self.entry2.publish_date)
+        self.entry2.sm_take_action('Publish')
+        self.entry2.save()
+        self.assertTrue(self.entry2.publish_date)
+        self.assertTrue('Published', self.entry2._sm_state)
+
+
+class EntryManagerTestCase(BaseTestCase):
+
+    def test_no_public_entries(self):
+        self.assertEqual(0, Entry.objects.public().count())
+
+    def test_public_entries(self):
+        self.entry1.sm_take_action('Publish')
+        self.entry1.save()
+        self.assertEqual(1, Entry.objects.public().count())
+
+    def test_related_by_categories(self):
+        self.entry1.sm_take_action('Publish')
+        self.entry1.save()
+
+        self.entry2.sm_take_action('Publish')
+        self.entry2.save()
+
+        self.assertEqual(1,
+            Entry.objects.related_by_categories(self.entry1).count())
+
+    def test_related_by_categories_published_only(self):
+        self.assertEqual(0,
+            Entry.objects.related_by_categories(self.entry1).count())
+
+
+class CategoryViewTestCase(TestCase):
+
+    def test_view_exists(self):
+        self.assertTrue(False)
+
+    def test_view_get_object(self):
+        self.assertTrue(False)
+
+    def test_category_in_context(self):
+        self.assertTrue(False)
+
+    def test_entries_in_context(self):
+        self.assertTrue(False)
+
+
+class TagViewTestCase(TestCase):
+
+    def test_view_exists(self):
+        self.assertTrue(False)
+
+    def test_entry_list_in_context(self):
+        self.assertTrue(False)
+
+    def test_entry_in_context(self):
+        self.assertTrue(False)
+

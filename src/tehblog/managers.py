@@ -9,7 +9,9 @@ from datetime import datetime
 
 from django.db import models
 
+
 class EntryManager(models.Manager):
+
     def public(self):
         return self.get_query_set().filter(_sm_state='Published')
 
