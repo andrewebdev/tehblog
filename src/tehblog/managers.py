@@ -13,13 +13,13 @@ from django.db import models
 class EntryManager(models.Manager):
 
     def public(self):
-        return self.get_query_set().filter(_sm_state='Published')
+        return self.get_query_set().filter(_statemachine__state='published')
 
     def related_by_categories(self, entry, count=None):
         """
         This method will return all entries related to ``entry`` by category
         if ``count`` is specified, then we restrict the number of entries returned
         """
-        entries = self.public().exclude(slug=entry.slug
+        qs = self.public().exclude(slug=entry.slug
             ).filter(categories=entry.categories.all()).distinct()
-        return entries[:count]
+        return qs[:count]

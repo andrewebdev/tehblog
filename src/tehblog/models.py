@@ -9,10 +9,13 @@ from datetime import datetime
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes import generic
 
 from tagging.fields import TagField
-from tehblog.managers import EntryManager
 from ostinato.statemachine import StateMachine
+from ostinato.statemachine.models import StateMachineField, DefaultStateMachine
+
+from tehblog.managers import EntryManager
 
 
 class Category(models.Model):
@@ -54,12 +57,11 @@ class Entry(models.Model, StateMachine):
     publish_date = models.DateTimeField(null=True, blank=True)
     allow_comments = models.BooleanField(default=True)
 
-    # Required by StateMachine.
-    _sm_state = models.CharField(max_length=100,
-                                 default="Private", editable=False)
-
-    # A custom manager
+    # Managers and Statemachine related fields
     objects = EntryManager()
+
+    sm = StateMachineField(DefaultStateMachine)
+    _statemachine = generic.GenericRelation(DefaultStateMachine)
 
     class Meta:
         ordering = ('-publish_date', '-created_date')
@@ -70,6 +72,9 @@ class Entry(models.Model, StateMachine):
     def __unicode__(self):
         return "%s" % self.title
 
+    def state(self):
+        return self.sm.state
+        
     @models.permalink
     def get_url(self, *args):
         return args
@@ -85,7 +90,3 @@ class Entry(models.Model, StateMachine):
         else:
             # Should we raise a 404 or message that entry is not published?
             return ''
-
-    def sm_post_action(self, **kwargs):
-        if kwargs['action'] == 'Publish':
-            self.publish_date = datetime.now()

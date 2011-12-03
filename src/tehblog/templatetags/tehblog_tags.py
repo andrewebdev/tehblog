@@ -27,7 +27,7 @@ def category_list(count=None):
     """
     return {
         'category_list': Category.objects.all().filter(
-            entry___sm_state='Published').distinct()[:count]
+            entry___statemachine__state='published').distinct()[:count]
     }
 
 
@@ -44,7 +44,7 @@ def tag_list(slice_count=None):
     slice_count = str(slice_count)
     try:
         tag_list = Tag.objects.usage_for_model(Entry, counts=True,
-            filters={ '_sm_state': 'Published' })
+            filters={ '_statemachine__state': 'published' })
     except:
         pass
     return locals()
@@ -66,7 +66,8 @@ def date_hierarchy():
 
     """
     return {
-        'hierarchy': Entry.objects.public().order_by('publish_date').values('publish_date')
+        'hierarchy': Entry.objects.public().order_by('publish_date')\
+            .values('publish_date')
     }
 
 
